@@ -1,19 +1,20 @@
 # CarHelper
 
-## Our project is a smart web application designed to be the primary assistant for every car owner in Saudi Arabia. Our main goal with CarHelper is to simplify the car maintenance and valuation process using artificial intelligence in order to solve common problems such as unclear dashboard markings and inconsistent repair prices.
-
+## Description 
+CarHelper is a web app we are building to help car owners easily figure out what is wrong with their cars, understand those confusing dashboard warning lights, and get a clear idea of repair and resale prices.
 
 
 ## Features
-- A
-- B
-
-
+- Users take a photo of a warning light, and the AI instantly identifies the problem.
+- Estimates repair prices for the Saudi market so users do not pay too much.
+- Calculates a fair resale price based on the car's current shape.
+ 
 ## Usage
 
 To build and run the app, use:
 
 ```shell
+
 ```
 
 ## Screenshots
