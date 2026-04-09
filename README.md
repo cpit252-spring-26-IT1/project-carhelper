@@ -9,17 +9,3 @@ CarHelper is a web app we are building to help car owners easily figure out what
 - Estimates repair prices for the Saudi market so users do not pay too much.
 - Calculates a fair resale price based on the car's current shape.
  
-## Usage
-
-To build and run the app, use:
-
-```shell
-
-```
-
-## Screenshots
-
-
-## License
-
-Pick a project license
