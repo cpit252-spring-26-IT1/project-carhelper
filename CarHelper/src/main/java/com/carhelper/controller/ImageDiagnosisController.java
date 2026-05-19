@@ -1,32 +1,43 @@
 package com.carhelper.controller;
 
-import com.carhelper.adapter.ApiAdapter;
-import com.carhelper.ai.ImageAiService;
+import com.carhelper.command.ImageDiagnosisCommand;
 import com.carhelper.model.DiagnosticReport;
-import org.springframework.http.ResponseEntity;
+import com.carhelper.service.HistoryService;
+import com.carhelper.service.ImageDiagnosisService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/diagnosis")
+@CrossOrigin(origins = "*")
 public class ImageDiagnosisController {
+    private final ImageDiagnosisService imageDiagnosisService;
+    private final HistoryService historyService;
 
-    private final ImageAiService imageAiService;
-    private final ApiAdapter apiAdapter;
-
-    public ImageDiagnosisController(ImageAiService imageAiService, ApiAdapter apiAdapter) {
-        this.imageAiService = imageAiService;
-        this.apiAdapter = apiAdapter;
+    public ImageDiagnosisController(ImageDiagnosisService imageDiagnosisService, HistoryService historyService) {
+        this.imageDiagnosisService = imageDiagnosisService;
+        this.historyService = historyService;
     }
 
     @PostMapping("/image")
-    public ResponseEntity<DiagnosticReport> analyzeImage(
+    public DiagnosticReport analyzeImage(
             @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "language", required = false) String language
     ) {
-        String rawResult = imageAiService.analyzeImage(file, language);
-        DiagnosticReport report = apiAdapter.translateResponse(rawResult);
-        return ResponseEntity.ok(report);
+        ImageDiagnosisCommand command = new ImageDiagnosisCommand(imageDiagnosisService, file, language);
+        DiagnosticReport report = command.execute();
+
+        String input = file.getOriginalFilename();
+
+        String result = "Issue Name: " + report.getIssueName()
+                + "\nDetected Problems: " + report.getDetectedProblems()
+                + "\nRepair Suggestion: " + report.getRepairSuggestion()
+                + "\nEstimated Cost: " + report.getEstimatedCost()
+                + "\nDisclaimer: " + report.getAiDisclaimer();
+
+        historyService.saveHistory(userId, "Image Diagnosis", input, result);
+
+        return report;
     }
 }
