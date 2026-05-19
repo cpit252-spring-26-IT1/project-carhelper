@@ -1,77 +1,132 @@
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
-export async function registerUser(user) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(user)
-  });
+function cleanErrorMessage(errorText) {
+  if (!errorText) {
+    return "Something went wrong. Please try again.";
+  }
 
-  const data = await response.json();
-  return { response, data };
+  const text = String(errorText);
+
+  if (text.includes("503") || text.toLowerCase().includes("unavailable")) {
+    return "AI service is busy now. Please try again in a few minutes.";
+  }
+
+  if (text.includes("401") || text.includes("403") || text.toLowerCase().includes("api key")) {
+    return "AI API key is missing or invalid. Please check backend settings.";
+  }
+
+  if (text.includes("429") || text.toLowerCase().includes("quota") || text.toLowerCase().includes("rate limit")) {
+    return "AI request limit reached. Please try again later.";
+  }
+
+  if (text.toLowerCase().includes("failed to fetch")) {
+    return "Cannot connect to backend. Make sure Spring Boot is running on port 8080.";
+  }
+
+  if (text.toLowerCase().includes("network")) {
+    return "Network error. Please check your connection and try again.";
+  }
+
+  return text;
 }
 
-export async function loginUser(user) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(user)
-  });
+async function readResponse(response) {
+  const text = await response.text();
 
-  const data = await response.json();
-  return { response, data };
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return { message: text };
+  }
 }
 
-export async function resetPassword(resetData) {
-  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-    method: "POST",
+async function request(path, options = {}) {
+  const response = await fetch(API_BASE_URL + path, {
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     },
-    body: JSON.stringify(resetData)
+    ...options
   });
 
-  const data = await response.json();
-  return { response, data };
+  const data = await readResponse(response);
+
+  if (!response.ok) {
+    throw new Error(cleanErrorMessage(data.message || data.error || "Request failed"));
+  }
+
+  return data;
 }
 
-export async function analyzeImage(file, language) {
+export async function registerUser(data) {
+  return request("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+export async function loginUser(data) {
+  return request("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+export async function analyzeImage(file, userId, language) {
   const formData = new FormData();
-
   formData.append("file", file);
-  formData.append("language", language);
 
-  const response = await fetch(`${API_BASE_URL}/diagnosis/image`, {
+  if (userId) {
+    formData.append("userId", userId);
+  }
+
+  if (language) {
+    formData.append("language", language);
+  }
+
+  const response = await fetch(API_BASE_URL + "/api/diagnosis/image", {
     method: "POST",
     body: formData
   });
 
+  const data = await readResponse(response);
+
   if (!response.ok) {
-    throw new Error("Image analysis failed");
+    throw new Error(cleanErrorMessage(data.message || "Image analysis failed"));
   }
 
-  return response.json();
+  return data;
 }
 
-export async function analyzeProblem(problemData, language) {
-  const response = await fetch(`${API_BASE_URL}/diagnosis/analyze`, {
+export async function analyzeSymptoms(data) {
+  return request("/api/diagnosis/symptoms", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      ...problemData,
-      language
-    })
+    body: JSON.stringify(data)
   });
+}
 
-  if (!response.ok) {
-    throw new Error("Problem analysis request failed");
-  }
+export async function estimateRepairCost(data) {
+  return request("/api/cost/repair", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
 
-  return response.json();
+export async function estimateResaleValue(data) {
+  return request("/api/cost/resale", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+export async function getHistory(userId) {
+  return request("/api/profile/history/" + userId);
+}
+
+export async function getUserHistory(userId) {
+  return request("/api/profile/history/" + userId);
 }
