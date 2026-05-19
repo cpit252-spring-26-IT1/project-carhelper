@@ -1,5 +1,5 @@
 package com.carhelper.command;
 
-public interface DiagnosisCommand {
-    String execute();
+public interface DiagnosisCommand<T> {
+    T execute();
 }

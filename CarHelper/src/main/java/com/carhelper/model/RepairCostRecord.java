@@ -14,8 +14,6 @@ public class RepairCostRecord {
     private String carBrand;
     private String carModel;
     private String carYear;
-    private String city;
-
     @Column(length = 2000)
     private String problemDescription;
 
@@ -27,12 +25,11 @@ public class RepairCostRecord {
     public RepairCostRecord() {
     }
 
-    public RepairCostRecord(String carBrand, String carModel, String carYear, String problemDescription, String city, String aiResult) {
+    public RepairCostRecord(String carBrand, String carModel, String carYear, String problemDescription, String aiResult) {
         this.carBrand = carBrand;
         this.carModel = carModel;
         this.carYear = carYear;
         this.problemDescription = problemDescription;
-        this.city = city;
         this.aiResult = aiResult;
         this.createdAt = LocalDateTime.now();
     }
@@ -73,14 +70,6 @@ public class RepairCostRecord {
         this.problemDescription = problemDescription;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public String getAiResult() {
         return aiResult;
     }
@@ -97,4 +86,3 @@ public class RepairCostRecord {
         this.createdAt = createdAt;
     }
 }
-

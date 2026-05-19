@@ -1,13 +1,9 @@
 package com.carhelper.dto;
 
 public class AuthRequest {
-
     private String username;
     private String email;
     private String password;
-
-    public AuthRequest() {
-    }
 
     public String getUsername() {
         return username;

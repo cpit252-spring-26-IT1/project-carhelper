@@ -12,6 +12,10 @@ public class ImageAiService {
         this.geminiAiService = geminiAiService;
     }
 
+    public String analyzeImage(MultipartFile file) {
+        return analyzeImage(file, "en");
+    }
+
     public String analyzeImage(MultipartFile file, String language) {
         return geminiAiService.analyzeImage(file, language);
     }

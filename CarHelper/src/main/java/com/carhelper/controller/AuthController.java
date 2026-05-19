@@ -1,7 +1,6 @@
 package com.carhelper.controller;
 
 import com.carhelper.dto.AuthRequest;
-import com.carhelper.dto.ResetPasswordRequest;
 import com.carhelper.model.User;
 import com.carhelper.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +11,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class AuthController {
-
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -22,68 +20,37 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest request) {
-        Map<String, Object> response = new HashMap<>();
-
+    public ResponseEntity<?> register(@RequestBody AuthRequest request) {
         try {
             User savedUser = authService.register(request);
-
-            response.put("success", true);
-            response.put("message", "Account created successfully");
-            response.put("id", savedUser.getId());
-            response.put("username", savedUser.getUsername());
-            response.put("email", savedUser.getEmail());
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(userResponse(savedUser, "Registration successful"));
         } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest request) {
-        Map<String, Object> response = new HashMap<>();
-
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
-            User foundUser = authService.login(request);
-
-            response.put("success", true);
-            response.put("message", "Login successful");
-            response.put("id", foundUser.getId());
-            response.put("username", foundUser.getUsername());
-            response.put("email", foundUser.getEmail());
-
-            return ResponseEntity.ok(response);
+            User loggedUser = authService.login(request);
+            return ResponseEntity.ok(userResponse(loggedUser, "Login successful"));
         } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
         }
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody ResetPasswordRequest request) {
+    private Map<String, Object> userResponse(User user, String message) {
         Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("id", user.getId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        return response;
+    }
 
-        try {
-            User updatedUser = authService.resetPassword(request);
-
-            response.put("success", true);
-            response.put("message", "Password updated successfully");
-            response.put("id", updatedUser.getId());
-            response.put("username", updatedUser.getUsername());
-            response.put("email", updatedUser.getEmail());
-
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-        }
+    private Map<String, String> error(String message) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return response;
     }
 }
