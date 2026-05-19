@@ -8,12 +8,7 @@
       </list>
     </option>
   </component>
-  <component name="PrettierConfiguration">
-    <option name="myConfigurationMode" value="MANUAL" />
-    <option name="runOnPaste" value="false" />
-    <option name="codeStyleSettingsModifierEnabled" value="false" />
-  </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="25" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_25" default="true" project-jdk-name="openjdk-25" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

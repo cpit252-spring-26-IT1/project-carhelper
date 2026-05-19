@@ -1,34 +1,34 @@
 package com.carhelper.service;
 
 import com.carhelper.ai.TextAiService;
-import com.carhelper.dto.RepairCostRequest;
-import com.carhelper.strategy.RepairCostEstimatorContext;
+import com.carhelper.dto.ResaleValueRequest;
+import com.carhelper.strategy.ResaleValueCalculatorContext;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RepairCostService {
+public class ResaleValueService {
     private final TextAiService textAiService;
-    private final RepairCostEstimatorContext estimatorContext;
+    private final ResaleValueCalculatorContext calculatorContext;
 
-    public RepairCostService(TextAiService textAiService, RepairCostEstimatorContext estimatorContext) {
+    public ResaleValueService(TextAiService textAiService, ResaleValueCalculatorContext calculatorContext) {
         this.textAiService = textAiService;
-        this.estimatorContext = estimatorContext;
+        this.calculatorContext = calculatorContext;
     }
 
-    public String estimate(RepairCostRequest request) {
-        String prompt = estimatorContext.buildPrompt(request);
+    public String estimate(ResaleValueRequest request) {
+        String prompt = calculatorContext.buildPrompt(request);
 
         prompt = prompt + """
 
                 Return the answer in this exact format only:
 
-                Estimated Repair Cost: SAR X - SAR Y
-                Problem Summary: one short sentence
-                Possible Causes:
-                1. cause one
-                2. cause two
-                3. cause three
-                Recommendation: one short sentence
+                Estimated Price: SAR X - SAR Y
+                Condition Summary: one short sentence
+                Main Reasons:
+                1. reason one
+                2. reason two
+                3. reason three
+                Advice: one short sentence
 
                 Do not use markdown.
                 Do not use stars.
@@ -55,13 +55,13 @@ public class RepairCostService {
                 .replace("*", "")
                 .replace("---", "")
                 .replace("S A R", "SAR")
-                .replace("Estimated Repair Cost:", "\nEstimated Repair Cost:")
-                .replace("Problem Summary:", "\n\nProblem Summary:")
-                .replace("Possible Causes:", "\n\nPossible Causes:")
+                .replace("Estimated Price:", "\nEstimated Price:")
+                .replace("Condition Summary:", "\n\nCondition Summary:")
+                .replace("Main Reasons:", "\n\nMain Reasons:")
                 .replace("1.", "\n1.")
                 .replace("2.", "\n2.")
                 .replace("3.", "\n3.")
-                .replace("Recommendation:", "\n\nRecommendation:")
+                .replace("Advice:", "\n\nAdvice:")
                 .replaceAll("\\n{3,}", "\n\n")
                 .trim();
     }
