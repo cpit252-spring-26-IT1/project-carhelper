@@ -1,0 +1,7 @@
+com\carhelper\CarHelperApplicationTests$FakeGroqAiService.class
+com\carhelper\CarHelperApplicationTests$FakeSearchHistoryRepository.class
+com\carhelper\CarHelperApplicationTests$FakeTextAiService.class
+com\carhelper\CarHelperApplicationTests.class
+com\carhelper\CarHelperApplicationTests$FakeUserRepository.class
+com\carhelper\CarHelperApplicationTests$FakeGeminiAiService.class
+com\carhelper\CarHelperApplicationTests$FakeDeepSeekAiService.class
