@@ -828,3 +828,20 @@ body[dir="rtl"] .site-footer {
 .report-box {
   overflow-wrap: break-word;
 }
+
+.forgot-password-link {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.forgot-password-link button {
+  background: transparent;
+  border: none;
+  color: #38bdf8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.forgot-password-link button:hover {
+  text-decoration: underline;
+}

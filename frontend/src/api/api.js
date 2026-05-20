@@ -130,3 +130,21 @@ export async function getHistory(userId) {
 export async function getUserHistory(userId) {
   return request("/api/profile/history/" + userId);
 }
+
+export async function resetPassword(data) {
+  const response = await fetch("http://localhost:8080/api/auth/reset-password", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Password reset failed");
+  }
+
+  return result;
+}

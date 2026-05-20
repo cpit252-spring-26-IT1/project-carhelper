@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { loginUser } from "../api/api";
 import { useApp } from "../context/AppContext";
 
-export default function Login() {
+export default function Login({ setPage }) {
   const { saveUser } = useApp();
 
   const [form, setForm] = useState({
@@ -56,11 +56,17 @@ export default function Login() {
           </button>
         </form>
 
+        <div className="forgot-password-link">
+          <button type="button" onClick={() => setPage("forgot-password")}>
+            Forgot Password?
+          </button>
+        </div>
+
         {message && <div className="auth-message">{message}</div>}
 
         <div className="auth-switch">
           <span>Don’t have an account?</span>
-          <button type="button" onClick={() => (window.location.href = "/signup")}>
+          <button type="button" onClick={() => setPage("signup")}>
             Sign Up
           </button>
         </div>

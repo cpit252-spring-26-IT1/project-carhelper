@@ -9,6 +9,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DeepSeekAiService {
@@ -19,55 +21,64 @@ public class DeepSeekAiService {
     @Value("${deepseek.model:deepseek-chat}")
     private String model;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public String analyzeText(String prompt) {
-        if (apiKey == null || apiKey.isBlank()) {
+        if (apiKey == null || apiKey.isBlank() || apiKey.equals("YOUR_DEEPSEEK_API_KEY")) {
             return "DeepSeek API key is missing or invalid. Please check application.properties.";
         }
 
         try {
-            String requestBody = objectMapper.writeValueAsString(new DeepSeekRequest(
-                    model,
-                    new DeepSeekMessage[]{
-                            new DeepSeekMessage("user", prompt)
-                    }
-            ));
+            Map<String, Object> message = Map.of(
+                    "role", "user",
+                    "content", prompt
+            );
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.deepseek.com/chat/completions"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+            Map<String, Object> requestBody = Map.of(
+                    "model", model,
+                    "messages", List.of(message)
+            );
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonBody = mapper.writeValueAsString(requestBody);
+            HttpRequest request = buildRequest(jsonBody);
+            HttpResponse<String> response = sendRequest(request);
 
             if (response.statusCode() != 200) {
                 return cleanErrorMessage(response.statusCode(), response.body());
             }
 
-            JsonNode root = objectMapper.readTree(response.body());
+            return extractText(response.body());
 
-            JsonNode content = root
-                    .path("choices")
-                    .path(0)
-                    .path("message")
-                    .path("content");
-
-            if (content.isMissingNode() || content.asText().isBlank()) {
-                return "DeepSeek returned an empty response.";
-            }
-
-            return content.asText();
-
-        } catch (Exception error) {
-            return cleanExceptionMessage(error);
+        } catch (Exception e) {
+            return cleanExceptionMessage(e);
         }
     }
 
-    private String cleanErrorMessage(int statusCode, String body) {
+    protected HttpRequest buildRequest(String jsonBody) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create("https://api.deepseek.com/chat/completions"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+    }
+
+    protected HttpResponse<String> sendRequest(HttpRequest request) throws Exception {
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    protected String extractText(String responseBody) throws Exception {
+        JsonNode root = mapper.readTree(responseBody);
+        JsonNode text = root.path("choices").path(0).path("message").path("content");
+
+        if (text.isMissingNode() || text.asText().isBlank()) {
+            return "DeepSeek returned an empty response.";
+        }
+
+        return text.asText();
+    }
+
+    public String cleanErrorMessage(int statusCode, String body) {
         String text = body == null ? "" : body.toLowerCase();
 
         if (statusCode == 401 || statusCode == 403 || text.contains("api key") || text.contains("unauthorized")) {
@@ -89,29 +100,21 @@ public class DeepSeekAiService {
         return "DeepSeek analysis failed. Please try again.";
     }
 
-    private String cleanExceptionMessage(Exception error) {
-        String message = error.getMessage();
-
-        if (message == null) {
+    public String cleanExceptionMessage(Exception error) {
+        if (error.getMessage() == null) {
             return "DeepSeek analysis failed. Please try again.";
         }
 
-        String text = message.toLowerCase();
+        String message = error.getMessage().toLowerCase();
 
-        if (text.contains("timeout")) {
+        if (message.contains("timeout")) {
             return "DeepSeek service took too long to respond. Please try again.";
         }
 
-        if (text.contains("connect")) {
+        if (message.contains("connect")) {
             return "Cannot connect to DeepSeek service. Please try again.";
         }
 
         return "DeepSeek analysis failed. Please try again.";
-    }
-
-    private record DeepSeekRequest(String model, DeepSeekMessage[] messages) {
-    }
-
-    private record DeepSeekMessage(String role, String content) {
     }
 }

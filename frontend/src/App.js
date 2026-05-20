@@ -9,6 +9,7 @@ import ImageDiagnosis from "./pages/ImageDiagnosis";
 import SymptomDescription from "./pages/SymptomDescription";
 import RepairCostEstimator from "./pages/RepairCostEstimator";
 import ResaleValueCalculator from "./pages/ResaleValueCalculator";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import "./style.css";
 
 function AppContent() {
@@ -27,6 +28,7 @@ function AppContent() {
     if (path === "/symptoms") return <SymptomDescription />;
     if (path === "/repair") return <RepairCostEstimator />;
     if (path === "/resale") return <ResaleValueCalculator />;
+    if (path === "/forgot-password") return <ForgotPasswordPage setPage={goTo} />;
 
     return <Home setPage={goTo} />;
   }
